@@ -1,3 +1,5 @@
+from typing import List
+
 import requests
 from bs4 import BeautifulSoup
 from requests import Response
@@ -17,7 +19,7 @@ class Parser:
             raise TemporaryUnavailableException()
         return response
 
-    def get_catalogues(self) -> dict:
+    def get_catalogues(self) -> List[dict]:
         catalogues, soup = [], BeautifulSoup(self._make_request('/').content, 'html.parser')
 
         for catalog_element in soup.select('nav li.dropmenu__list--item.hasDrop'):

@@ -1,5 +1,6 @@
 import json
 import os
+from typing import List
 from unittest import TestCase
 
 from requests import HTTPError
@@ -13,7 +14,7 @@ class ParserTestCase(TestCase):
         cls.parser = Parser()
 
     @staticmethod
-    def load_fixture(filename: str) -> dict:
+    def load_fixture(filename: str) -> List[dict]:
         with open(os.path.join(os.path.dirname(__file__), filename), 'r+') as file:
             return json.loads(file.read())
 
