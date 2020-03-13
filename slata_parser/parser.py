@@ -2,7 +2,7 @@ from typing import List
 
 import requests
 from bs4 import BeautifulSoup
-from requests import Response, HTTPError
+from requests import Response
 
 from . import exceptions
 
@@ -22,8 +22,13 @@ class Parser:
         'осталось много': True, 'нет в наличии': False
     }
 
-    def _make_request(self, uri: str, params: dict = None) -> Response:
-        response = requests.get((self.DEFAULT_URL + uri), params)
+    def _make_request(self, uri: str, params: dict = None, catch404=False) -> Response:
+        response_url = self.DEFAULT_URL + uri
+        response = requests.get(response_url, params)
+
+        if catch404 and response.status_code == 404:
+            raise exceptions.PageNotFound(response_url)
+
         response.raise_for_status()
 
         if True in [e in response.text for e in self.ERROR_STRINGS]:
@@ -52,11 +57,9 @@ class Parser:
 
     def get_catalog(self, catalog_id: int) -> dict:
         try:
-            response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1})
-        except HTTPError as exception:
-            if exception.response.status_code == 404:
-                raise exceptions.CatalogNotFound(catalog_id)
-            raise
+            response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1}, catch404=True)
+        except exceptions.PageNotFound:
+            raise exceptions.CatalogNotFound(catalog_id)
 
         soup = BeautifulSoup(response.content, 'html.parser')
 
@@ -96,11 +99,9 @@ class Parser:
 
     def get_product(self, catalog_id: int, product_id: int) -> dict:
         try:
-            response = self._make_request(f'/catalog/{catalog_id}/{product_id}/')
-        except HTTPError as exception:
-            if exception.response.status_code == 404:
-                raise exceptions.ProductNotFound(catalog_id, product_id)
-            raise
+            response = self._make_request(f'/catalog/{catalog_id}/{product_id}/', catch404=True)
+        except exceptions.PageNotFound:
+            raise exceptions.ProductNotFound(catalog_id, product_id)
 
         soup = BeautifulSoup(response.content, 'html.parser')
 

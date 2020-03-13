@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from requests import HTTPError
 
-from slata_parser.exceptions import CatalogNotFound, ProductNotFound
+from slata_parser import exceptions
 from slata_parser.parser import Parser
 
 
@@ -28,6 +28,8 @@ class ParserTestCase(TestCase):
         self.assertEqual(self.parser._make_request('/').status_code, 200)
         self.assertRaises(HTTPError, self.parser._make_request, '/catalog/0/0/')
 
+        self.assertRaises(exceptions.PageNotFound, self.parser._make_request, '/catalog/0/0/', catch404=True)
+
     def test_get_catalogs(self):
         self.assertEqual(self.load_fixture('catalogs-sample.json'), self.parser.get_catalogs())
 
@@ -40,7 +42,7 @@ class ParserTestCase(TestCase):
 
             self.assertGreater(len(catalog['products']), 0)
 
-        self.assertRaises(CatalogNotFound, self.parser.get_catalog, 4469)
+        self.assertRaises(exceptions.CatalogNotFound, self.parser.get_catalog, 4469)
 
     def test_get_product(self):
         for product_sample in self.load_fixture('product-samples.json'):
@@ -49,4 +51,4 @@ class ParserTestCase(TestCase):
             for key in product.keys() - {'common_price', 'discount_price', 'is_available'}:
                 self.assertEqual(product[key], product_sample[key])
 
-        self.assertRaises(ProductNotFound, self.parser.get_product, 3861, 0)
+        self.assertRaises(exceptions.ProductNotFound, self.parser.get_product, 3861, 0)

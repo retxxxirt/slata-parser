@@ -7,6 +7,11 @@ class TemporaryUnavailableException(SlataParserException):
         super().__init__('Server temporary unavailable. Try again later.')
 
 
+class PageNotFound(SlataParserException):
+    def __init__(self, url: str):
+        super().__init__(f'Page {url} not found.')
+
+
 class CatalogNotFound(SlataParserException):
     def __init__(self, catalog_id: int):
         super().__init__(f'Catalog {catalog_id} not found.')
