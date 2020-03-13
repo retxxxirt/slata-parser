@@ -11,6 +11,17 @@ class Parser:
     DEFAULT_URL = 'https://shop.slata.ru'
     ERROR_STRINGS = ['DB query error', 'Mysql connect error']
 
+    PRODUCT_CHARACTERISTICS = {
+        'состав': 'composition', 'бренд': 'brand',
+        'страна': 'country', 'производитель': 'manufacturer',
+        'объём': 'volume', 'срок хранения': 'storage_life',
+        'условия хранения': 'storage_conditions',
+    }
+
+    PRODUCT_AVAILABILITY_STATES = {
+        'осталось много': True, 'нет в наличии': False
+    }
+
     def _make_request(self, uri: str, params: dict = None) -> Response:
         response = requests.get((self.DEFAULT_URL + uri), params)
         response.raise_for_status()
@@ -76,3 +87,37 @@ class Parser:
             })
 
         return catalog
+
+    def get_product(self, catalog_id: int, product_id: int) -> dict:
+        response = self._make_request(f'/catalog/{catalog_id}/{product_id}/')
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        product = {
+            'id': product_id, 'catalog_id': catalog_id,
+            'name': soup.select_one('.card-b__title').text,
+            'article': int(soup.select_one('.card-b__article').text[5:]),
+            'image_url': self.DEFAULT_URL + soup.select_one('.fotorama img')['src']
+        }
+
+        for characteristic_element in soup.select('.card-b__char .card-b__line'):
+            characteristic_label = characteristic_element.select_one('.card-b__label').text
+            characteristic_value = characteristic_element.select_one('.card-b__value').text
+
+            if characteristic_label.lower() in self.PRODUCT_CHARACTERISTICS:
+                characteristic_label = self.PRODUCT_CHARACTERISTICS[characteristic_label.lower()]
+                product[characteristic_label] = characteristic_value
+            else:
+                product['extra_characteristics'][characteristic_label] = characteristic_value
+
+        common_price, discount_price = float(soup.select_one('.js--price-current')['value']), None
+
+        if price_element := soup.select_one('.card-b__price-count_old'):
+            discount_price = float(price_element.text.split('\xa0')[0].replace(' ', ''))
+            discount_price, common_price = common_price, discount_price
+
+        product['common_price'], product['discount_price'] = common_price, discount_price
+
+        availability_type = soup.select_one('.card-b__count').text.strip().lower()
+        product['is_available'] = self.PRODUCT_AVAILABILITY_STATES[availability_type]
+
+        return product

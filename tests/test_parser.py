@@ -38,3 +38,10 @@ class ParserTestCase(TestCase):
                 self.assertEqual(catalog[key], catalog_sample[key])
 
             self.assertGreater(len(catalog['products']), 0)
+
+    def test_get_product(self):
+        for product_sample in self.load_fixture('product-samples.json'):
+            product = self.parser.get_product(product_sample['catalog_id'], product_sample['id'])
+
+            for key in product.keys() - {'common_price', 'discount_price', 'is_available'}:
+                self.assertEqual(product[key], product_sample[key])
