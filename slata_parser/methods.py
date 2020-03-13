@@ -1,9 +1,9 @@
 from .parser import Parser
 
 __all__ = [
-    'get_categories'
+    'get_catalogues'
 ]
 
 parser = Parser()
 
-get_categories = parser.get_categories
+get_catalogues = parser.get_catalogues

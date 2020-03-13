@@ -17,22 +17,22 @@ class Parser:
             raise TemporaryUnavailableException()
         return response
 
-    def get_categories(self) -> dict:
-        categories, soup = [], BeautifulSoup(self._make_request('/').content, 'html.parser')
+    def get_catalogues(self) -> dict:
+        catalogues, soup = [], BeautifulSoup(self._make_request('/').content, 'html.parser')
 
-        for category_element in soup.select('nav li.dropmenu__list--item.hasDrop'):
-            category_link_element = category_element.select_one('.item__link')
+        for catalog_element in soup.select('nav li.dropmenu__list--item.hasDrop'):
+            catalog_link_element = catalog_element.select_one('.item__link')
 
-            categories.append({
-                'id': int(category_link_element['href'].split('/')[2]),
-                'name': category_link_element.text.replace('\t', '').strip(),
-                'subcategories': []
+            catalogues.append({
+                'id': int(catalog_link_element['href'].split('/')[2]),
+                'name': catalog_link_element.text.replace('\t', '').strip(),
+                'catalogues': []
             })
 
-            for subcategory_link_element in category_element.select('.list__item--link'):
-                categories[-1]['subcategories'].append({
-                    'id': int(subcategory_link_element['href'].split('/')[2]),
-                    'name': subcategory_link_element.text.replace('\t', '').strip()
+            for child_catalog_link_element in catalog_element.select('.list__item--link'):
+                catalogues[-1]['catalogues'].append({
+                    'id': int(child_catalog_link_element['href'].split('/')[2]),
+                    'name': child_catalog_link_element.text.replace('\t', '').strip()
                 })
 
-        return categories
+        return catalogues
