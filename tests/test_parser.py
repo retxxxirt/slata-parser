@@ -22,8 +22,8 @@ class ParserTestCase(TestCase):
         self.assertEqual(self.parser._make_request('/').status_code, 200)
         self.assertRaises(HTTPError, self.parser._make_request, '/catalog/0/0/')
 
-    def test_get_catalogues(self):
-        self.assertEqual(self.load_fixture('catalogues.json'), self.parser.get_catalogues())
+    def test_get_catalogs(self):
+        self.assertEqual(self.load_fixture('catalogs-sample.json'), self.parser.get_catalogs())
 
     def test_get_catalog(self):
         for catalog_sample in self.load_fixture('catalog-samples.json'):

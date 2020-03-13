@@ -19,32 +19,32 @@ class Parser:
             raise TemporaryUnavailableException()
         return response
 
-    def get_catalogues(self) -> List[dict]:
-        catalogues, soup = [], BeautifulSoup(self._make_request('/').content, 'html.parser')
+    def get_catalogs(self) -> List[dict]:
+        catalogs, soup = [], BeautifulSoup(self._make_request('/').content, 'html.parser')
 
         for catalog_element in soup.select('nav li.dropmenu__list--item.hasDrop'):
             catalog_link_element = catalog_element.select_one('.item__link')
 
-            catalogues.append({
+            catalogs.append({
                 'id': int(catalog_link_element['href'].split('/')[2]),
                 'name': catalog_link_element.text.replace('\t', '').strip(),
-                'catalogues': []
+                'catalogs': []
             })
 
             for child_catalog_link_element in catalog_element.select('.list__item--link'):
-                catalogues[-1]['catalogues'].append({
+                catalogs[-1]['catalogs'].append({
                     'id': int(child_catalog_link_element['href'].split('/')[2]),
                     'name': child_catalog_link_element.text.replace('\t', '').strip()
                 })
 
-        return catalogues
+        return catalogs
 
     def get_catalog(self, catalog_id: int) -> dict:
         response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1})
         soup = BeautifulSoup(response.content, 'html.parser')
 
         catalog = {
-            'id': catalog_id, 'products': [], 'catalogues': [],
+            'id': catalog_id, 'products': [], 'catalogs': [],
             'name': soup.select_one('.page-header').text.replace('\n', '')
         }
 
@@ -69,7 +69,7 @@ class Parser:
             catalog['products'].append(product)
 
         for catalog_link_element in soup.select('.as-categories a'):
-            catalog['catalogues'].append({
+            catalog['catalogs'].append({
                 'id': int(catalog_link_element['href'].split('/')[-2]),
                 'url': self.DEFAULT_URL + catalog_link_element['href'],
                 'name': catalog_link_element.text.strip()
