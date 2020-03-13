@@ -5,6 +5,7 @@ from unittest import TestCase
 
 from requests import HTTPError
 
+from slata_parser.exceptions import CatalogNotFound
 from slata_parser.parser import Parser
 
 
@@ -38,6 +39,8 @@ class ParserTestCase(TestCase):
                 self.assertEqual(catalog[key], catalog_sample[key])
 
             self.assertGreater(len(catalog['products']), 0)
+
+        self.assertRaises(CatalogNotFound, self.parser.get_catalog, 4469)
 
     def test_get_product(self):
         for product_sample in self.load_fixture('product-samples.json'):

@@ -2,9 +2,9 @@ from typing import List
 
 import requests
 from bs4 import BeautifulSoup
-from requests import Response
+from requests import Response, HTTPError
 
-from .exceptions import TemporaryUnavailableException
+from .exceptions import TemporaryUnavailableException, CatalogNotFound
 
 
 class Parser:
@@ -51,7 +51,13 @@ class Parser:
         return catalogs
 
     def get_catalog(self, catalog_id: int) -> dict:
-        response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1})
+        try:
+            response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1})
+        except HTTPError as exception:
+            if exception.response.status_code == 404:
+                raise CatalogNotFound(catalog_id)
+            raise
+
         soup = BeautifulSoup(response.content, 'html.parser')
 
         catalog = {
