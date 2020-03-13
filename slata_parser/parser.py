@@ -38,3 +38,41 @@ class Parser:
                 })
 
         return catalogues
+
+    def get_catalog(self, catalog_id: int) -> dict:
+        response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1})
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        catalog = {
+            'id': catalog_id, 'products': [], 'catalogues': [],
+            'name': soup.select_one('.page-header').text.replace('\n', '')
+        }
+
+        for product_element in soup.select('.js-product'):
+            product = {
+                'id': int(product_element.select_one('.item__link')['href'].split('/')[-2]),
+                'url': self.DEFAULT_URL + product_element.select_one('.item__link')['href'],
+                'image_url': self.DEFAULT_URL + product_element.select_one('.item__pic--in img')['src'],
+                'name': product_element.select_one('.item__title--wrap').text.strip()
+            }
+
+            product_outer_price_element = product_element.select_one('.item__price')
+            product_common_price_element = product_outer_price_element.select_one('s')
+
+            if product_common_price_element:
+                product['common_price'] = float(product_common_price_element.text.strip().split()[0])
+                product['discount_price'] = float(product_outer_price_element.text.strip().split()[0])
+            else:
+                product['common_price'] = float(product_outer_price_element.text.strip().split()[0])
+                product['discount_price'] = None
+
+            catalog['products'].append(product)
+
+        for catalog_link_element in soup.select('.as-categories a'):
+            catalog['catalogues'].append({
+                'id': int(catalog_link_element['href'].split('/')[-2]),
+                'url': self.DEFAULT_URL + catalog_link_element['href'],
+                'name': catalog_link_element.text.strip()
+            })
+
+        return catalog
