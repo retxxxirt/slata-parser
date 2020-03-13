@@ -17,7 +17,7 @@ class Parser:
             raise TemporaryUnavailableException()
         return response
 
-    def get_categories(self):
+    def get_categories(self) -> dict:
         categories, soup = [], BeautifulSoup(self._make_request('/').content, 'html.parser')
 
         for category_element in soup.select('nav li.dropmenu__list--item.hasDrop'):
