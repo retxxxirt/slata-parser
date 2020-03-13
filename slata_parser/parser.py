@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response, HTTPError
 
-from .exceptions import TemporaryUnavailableException, CatalogNotFound
+from . import exceptions
 
 
 class Parser:
@@ -27,7 +27,7 @@ class Parser:
         response.raise_for_status()
 
         if True in [e in response.text for e in self.ERROR_STRINGS]:
-            raise TemporaryUnavailableException()
+            raise exceptions.TemporaryUnavailableException()
         return response
 
     def get_catalogs(self) -> List[dict]:
@@ -55,7 +55,7 @@ class Parser:
             response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1})
         except HTTPError as exception:
             if exception.response.status_code == 404:
-                raise CatalogNotFound(catalog_id)
+                raise exceptions.CatalogNotFound(catalog_id)
             raise
 
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -95,7 +95,13 @@ class Parser:
         return catalog
 
     def get_product(self, catalog_id: int, product_id: int) -> dict:
-        response = self._make_request(f'/catalog/{catalog_id}/{product_id}/')
+        try:
+            response = self._make_request(f'/catalog/{catalog_id}/{product_id}/')
+        except HTTPError as exception:
+            if exception.response.status_code == 404:
+                raise exceptions.ProductNotFound(catalog_id, product_id)
+            raise
+
         soup = BeautifulSoup(response.content, 'html.parser')
 
         product = {

@@ -5,7 +5,7 @@ from unittest import TestCase
 
 from requests import HTTPError
 
-from slata_parser.exceptions import CatalogNotFound
+from slata_parser.exceptions import CatalogNotFound, ProductNotFound
 from slata_parser.parser import Parser
 
 
@@ -48,3 +48,5 @@ class ParserTestCase(TestCase):
 
             for key in product.keys() - {'common_price', 'discount_price', 'is_available'}:
                 self.assertEqual(product[key], product_sample[key])
+
+        self.assertRaises(ProductNotFound, self.parser.get_product, 3861, 0)
