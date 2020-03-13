@@ -23,11 +23,11 @@ class Parser:
     }
 
     def _make_request(self, uri: str, params: dict = None, catch404=False) -> Response:
-        response_url = self.DEFAULT_URL + uri
-        response = requests.get(response_url, params)
+        request_url = self.DEFAULT_URL + uri
+        response = requests.get(request_url, params)
 
         if catch404 and response.status_code == 404:
-            raise exceptions.PageNotFound(response_url)
+            raise exceptions.PageNotFound(request_url)
 
         response.raise_for_status()
 
