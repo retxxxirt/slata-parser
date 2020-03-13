@@ -18,6 +18,11 @@ class ParserTestCase(TestCase):
         with open(os.path.join(os.path.dirname(__file__), filename), 'r+') as file:
             return json.loads(file.read())
 
+    @staticmethod
+    def save_fixture(filename: str, fixture: List[dict]):
+        with open(os.path.join(os.path.dirname(__file__), filename), 'w+') as file:
+            file.write(json.dumps(fixture))
+
     def test__make_request(self):
         self.assertEqual(self.parser._make_request('/').status_code, 200)
         self.assertRaises(HTTPError, self.parser._make_request, '/catalog/0/0/')
