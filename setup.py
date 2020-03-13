@@ -1,4 +1,3 @@
-import setuptools
 from distutils.core import setup
 
 setup(
@@ -12,5 +11,6 @@ setup(
     author='retxxxirt',
     author_email='retxxirt@gmail.com',
     url='https://github.com/retxxxirt/slata-parser',
-    keywords=['slata', 'slata parser', 'slata api', 'slata crawler']
+    keywords=['slata', 'slata parser', 'slata api', 'slata crawler'],
+    install_requires=open('requirements.txt', 'r').read().split('\n')
 )
