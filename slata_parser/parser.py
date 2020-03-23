@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from requests import Response
 
 from . import exceptions
+from .decorators import safe_parsing
 
 
 class Parser:
@@ -32,9 +33,10 @@ class Parser:
         response.raise_for_status()
 
         if True in [e in response.text for e in self.ERROR_STRINGS]:
-            raise exceptions.TemporaryUnavailableException()
+            raise exceptions.TemporaryUnavailable()
         return response
 
+    @safe_parsing
     def get_catalogs(self) -> List[dict]:
         catalogs, soup = [], BeautifulSoup(self._make_request('/').content, 'html.parser')
 
@@ -55,6 +57,7 @@ class Parser:
 
         return catalogs
 
+    @safe_parsing
     def get_catalog(self, catalog_id: int) -> dict:
         try:
             response = self._make_request(f'/catalog/{catalog_id}/', params={'SHOWALL_1': 1}, catch404=True)
@@ -97,6 +100,7 @@ class Parser:
 
         return catalog
 
+    @safe_parsing
     def get_product(self, catalog_id: int, product_id: int) -> dict:
         try:
             response = self._make_request(f'/catalog/{catalog_id}/{product_id}/', catch404=True)
