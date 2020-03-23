@@ -10,6 +10,8 @@ from .decorators import safe_parsing
 
 class Parser:
     DEFAULT_URL = 'https://shop.slata.ru'
+    NOPHOTO_URI = '/img/no-photo.jpg'
+
     ERROR_STRINGS = ['DB query error', 'Mysql connect error']
 
     PRODUCT_CHARACTERISTICS = {
@@ -113,8 +115,11 @@ class Parser:
             'id': product_id, 'catalog_id': catalog_id,
             'name': soup.select_one('.card-b__title').text,
             'article': int(soup.select_one('.card-b__article').text[5:]),
-            'image_url': self.DEFAULT_URL + soup.select_one('.fotorama img')['src']
+            'image_url': None
         }
+
+        if (image_uri := soup.select_one('.fotorama img')['src']) != self.NOPHOTO_URI:
+            product['image_url'] = self.DEFAULT_URL + image_uri
 
         for characteristic_element in soup.select('.card-b__char .card-b__line'):
             characteristic_label = characteristic_element.select_one('.card-b__label').text
