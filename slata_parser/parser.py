@@ -9,7 +9,8 @@ from .decorators import safe_parsing
 
 
 class Parser:
-    def _make_request(self, uri: str, params: dict = None, catch404=False) -> Response:
+    @staticmethod
+    def _make_request(uri: str, params: dict = None, catch404=False) -> Response:
         request_url = constants.DEFAULT_URL + uri
         response = requests.get(request_url, params)
 
