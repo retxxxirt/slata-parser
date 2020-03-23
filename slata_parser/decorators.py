@@ -1,7 +1,7 @@
 from time import sleep
 from typing import Callable
 
-from slata_parser import TemporaryUnavailableException
+from slata_parser import TemporaryUnavailable
 
 
 def safe_parsing(method: Callable):
@@ -11,9 +11,9 @@ def safe_parsing(method: Callable):
         for attempt in range(attempts_amount):
             try:
                 return method(*args, **kwargs)
-            except TemporaryUnavailableException:
+            except TemporaryUnavailable:
                 if attempt < attempts_amount - 1:
                     sleep(safe_interval)
-        raise TemporaryUnavailableException()
+        raise TemporaryUnavailable()
 
     return wrapper

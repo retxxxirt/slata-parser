@@ -2,7 +2,7 @@ class SlataParserException(Exception):
     pass
 
 
-class TemporaryUnavailableException(SlataParserException):
+class TemporaryUnavailable(SlataParserException):
     def __init__(self):
         super().__init__('Server temporary unavailable. Try again later.')
 

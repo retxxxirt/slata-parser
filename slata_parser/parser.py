@@ -33,7 +33,7 @@ class Parser:
         response.raise_for_status()
 
         if True in [e in response.text for e in self.ERROR_STRINGS]:
-            raise exceptions.TemporaryUnavailableException()
+            raise exceptions.TemporaryUnavailable()
         return response
 
     @safe_parsing
