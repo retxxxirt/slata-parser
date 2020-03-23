@@ -4,29 +4,13 @@ import requests
 from bs4 import BeautifulSoup
 from requests import Response
 
-from . import exceptions
+from . import exceptions, constants
 from .decorators import safe_parsing
 
 
 class Parser:
-    DEFAULT_URL = 'https://shop.slata.ru'
-    NOPHOTO_URI = '/img/no-photo.jpg'
-
-    ERROR_STRINGS = ['DB query error', 'Mysql connect error']
-
-    PRODUCT_CHARACTERISTICS = {
-        'состав': 'composition', 'бренд': 'brand',
-        'страна': 'country', 'производитель': 'manufacturer',
-        'объём': 'volume', 'срок хранения': 'storage_life',
-        'условия хранения': 'storage_conditions',
-    }
-
-    PRODUCT_AVAILABILITY_STATES = {
-        'осталось много': True, 'нет в наличии': False
-    }
-
     def _make_request(self, uri: str, params: dict = None, catch404=False) -> Response:
-        request_url = self.DEFAULT_URL + uri
+        request_url = constants.DEFAULT_URL + uri
         response = requests.get(request_url, params)
 
         if catch404 and response.status_code == 404:
@@ -34,7 +18,7 @@ class Parser:
 
         response.raise_for_status()
 
-        if True in [e in response.text for e in self.ERROR_STRINGS]:
+        if True in [e in response.text for e in constants.ERROR_STRINGS]:
             raise exceptions.TemporaryUnavailable()
         return response
 
@@ -76,8 +60,8 @@ class Parser:
         for product_element in soup.select('.js-product'):
             product = {
                 'id': int(product_element.select_one('.item__link')['href'].split('/')[-2]),
-                'url': self.DEFAULT_URL + product_element.select_one('.item__link')['href'],
-                'image_url': self.DEFAULT_URL + product_element.select_one('.item__pic--in img')['src'],
+                'url': constants.DEFAULT_URL + product_element.select_one('.item__link')['href'],
+                'image_url': constants.DEFAULT_URL + product_element.select_one('.item__pic--in img')['src'],
                 'name': product_element.select_one('.item__title--wrap').text.strip()
             }
 
@@ -96,7 +80,7 @@ class Parser:
         for catalog_link_element in soup.select('.as-categories a'):
             catalog['catalogs'].append({
                 'id': int(catalog_link_element['href'].split('/')[-2]),
-                'url': self.DEFAULT_URL + catalog_link_element['href'],
+                'url': constants.DEFAULT_URL + catalog_link_element['href'],
                 'name': catalog_link_element.text.strip()
             })
 
@@ -118,15 +102,15 @@ class Parser:
             'image_url': None
         }
 
-        if (image_uri := soup.select_one('.fotorama img')['src']) != self.NOPHOTO_URI:
-            product['image_url'] = self.DEFAULT_URL + image_uri
+        if (image_uri := soup.select_one('.fotorama img')['src']) != constants.NOPHOTO_URI:
+            product['image_url'] = constants.DEFAULT_URL + image_uri
 
         for characteristic_element in soup.select('.card-b__char .card-b__line'):
             characteristic_label = characteristic_element.select_one('.card-b__label').text
             characteristic_value = characteristic_element.select_one('.card-b__value').text
 
-            if characteristic_label.lower() in self.PRODUCT_CHARACTERISTICS:
-                characteristic_label = self.PRODUCT_CHARACTERISTICS[characteristic_label.lower()]
+            if characteristic_label.lower() in constants.PRODUCT_CHARACTERISTICS:
+                characteristic_label = constants.PRODUCT_CHARACTERISTICS[characteristic_label.lower()]
                 product[characteristic_label] = characteristic_value
             else:
                 product['extra_characteristics'][characteristic_label] = characteristic_value
@@ -140,6 +124,6 @@ class Parser:
         product['common_price'], product['discount_price'] = common_price, discount_price
 
         availability_type = soup.select_one('.card-b__count').text.strip().lower()
-        product['is_available'] = self.PRODUCT_AVAILABILITY_STATES[availability_type]
+        product['is_available'] = constants.PRODUCT_AVAILABILITY_STATES[availability_type]
 
         return product
