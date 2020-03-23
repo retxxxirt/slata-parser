@@ -25,10 +25,10 @@ class ParserTestCase(TestCase):
             file.write(json.dumps(fixture))
 
     def test__make_request(self):
-        self.assertEqual(self.parser._make_request('/').status_code, 200)
-        self.assertRaises(HTTPError, self.parser._make_request, '/catalog/0/0/')
+        self.assertEqual(Parser._make_request('/').status_code, 200)
+        self.assertRaises(HTTPError, Parser._make_request, '/catalog/0/0/')
 
-        self.assertRaises(exceptions.PageNotFound, self.parser._make_request, '/catalog/0/0/', catch404=True)
+        self.assertRaises(exceptions.PageNotFound, Parser._make_request, '/catalog/0/0/', catch404=True)
 
     def test_get_catalogs(self):
         self.assertEqual(self.load_fixture('catalogs-sample.json'), self.parser.get_catalogs())
