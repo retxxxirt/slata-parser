@@ -1,9 +1,9 @@
 import json
 import os
-from typing import List
 from unittest import TestCase
 
 from requests import HTTPError
+from typing import List
 
 from slata_parser import exceptions
 from slata_parser.parser import Parser
