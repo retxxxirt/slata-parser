@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
     name='slata-parser',
     packages=['slata_parser'],
-    version='0.2.1',
+    version='0.2.2',
     license='MIT',
     description='Slata shop parser.',
     author='retxxxirt',
