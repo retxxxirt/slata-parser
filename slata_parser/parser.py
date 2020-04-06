@@ -1,8 +1,7 @@
-from typing import List
-
 import requests
 from bs4 import BeautifulSoup
 from requests import Response
+from typing import List
 
 from . import exceptions, constants
 from .decorators import safe_parsing
@@ -32,14 +31,14 @@ class Parser:
 
             catalogs.append({
                 'id': int(catalog_link_element['href'].split('/')[2]),
-                'name': catalog_link_element.text.replace('\t', '').strip(),
+                'name': catalog_link_element.text.replace('\t', '').strip().capitalize(),
                 'catalogs': []
             })
 
             for child_catalog_link_element in catalog_element.select('.list__item--link'):
                 catalogs[-1]['catalogs'].append({
                     'id': int(child_catalog_link_element['href'].split('/')[2]),
-                    'name': child_catalog_link_element.text.replace('\t', '').strip()
+                    'name': child_catalog_link_element.text.replace('\t', '').strip().capitalize()
                 })
 
         return catalogs
@@ -70,7 +69,7 @@ class Parser:
             product_common_price_element = product_outer_price_element.select_one('s')
 
             if product_common_price_element:
-                product['common_price'] = float(product_common_price_element.text.strip().split()[0])
+                product['common_price'] = float(product_common_price_element.text.strip().split()[0].replace(',', ''))
                 product['discount_price'] = float(product_outer_price_element.text.strip().split()[0])
             else:
                 product['common_price'] = float(product_outer_price_element.text.strip().split()[0])
@@ -106,23 +105,14 @@ class Parser:
         if (image_uri := soup.select_one('.fotorama img')['src']) != constants.NOPHOTO_URI:
             product['image_url'] = constants.DEFAULT_URL + image_uri
 
-        for characteristic_element in soup.select('.card-b__char .card-b__line'):
-            characteristic_label = characteristic_element.select_one('.card-b__label').text
-            characteristic_value = characteristic_element.select_one('.card-b__value').text
+        product['common_price'], product['discount_price'] = None, None
 
-            if characteristic_label.lower() in constants.PRODUCT_CHARACTERISTICS:
-                characteristic_label = constants.PRODUCT_CHARACTERISTICS[characteristic_label.lower()]
-                product[characteristic_label] = characteristic_value
-            else:
-                product['extra_characteristics'][characteristic_label] = characteristic_value
+        if price_input_value := soup.select_one('.js--price-current')['value']:
+            product['common_price'] = float(price_input_value)
 
-        common_price, discount_price = float(soup.select_one('.js--price-current')['value']), None
-
-        if price_element := soup.select_one('.card-b__price-count_old'):
-            discount_price = float(price_element.text.split('\xa0')[0].replace(' ', ''))
-            discount_price, common_price = common_price, discount_price
-
-        product['common_price'], product['discount_price'] = common_price, discount_price
+            if price_element := soup.select_one('.card-b__price-count_old'):
+                product['discount_price'] = float(price_element.text.split('\xa0')[0].replace(' ', ''))
+                product['discount_price'], product['common_price'] = product['common_price'], product['discount_price']
 
         availability_type = soup.select_one('.card-b__count').text.strip().lower()
         product['is_available'] = constants.PRODUCT_AVAILABILITY_STATES[availability_type]
