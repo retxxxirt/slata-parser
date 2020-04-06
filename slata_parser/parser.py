@@ -1,8 +1,7 @@
-from typing import List
-
 import requests
 from bs4 import BeautifulSoup
 from requests import Response
+from typing import List
 
 from . import exceptions, constants
 from .decorators import safe_parsing
@@ -32,14 +31,14 @@ class Parser:
 
             catalogs.append({
                 'id': int(catalog_link_element['href'].split('/')[2]),
-                'name': catalog_link_element.text.replace('\t', '').strip(),
+                'name': catalog_link_element.text.replace('\t', '').strip().capitalize(),
                 'catalogs': []
             })
 
             for child_catalog_link_element in catalog_element.select('.list__item--link'):
                 catalogs[-1]['catalogs'].append({
                     'id': int(child_catalog_link_element['href'].split('/')[2]),
-                    'name': child_catalog_link_element.text.replace('\t', '').strip()
+                    'name': child_catalog_link_element.text.replace('\t', '').strip().capitalize()
                 })
 
         return catalogs
