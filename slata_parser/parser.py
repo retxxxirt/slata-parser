@@ -115,11 +115,14 @@ class Parser:
             else:
                 product['extra_characteristics'][characteristic_label] = characteristic_value
 
-        common_price, discount_price = float(soup.select_one('.js--price-current')['value']), None
+        common_price, discount_price = None, None
 
-        if price_element := soup.select_one('.card-b__price-count_old'):
-            discount_price = float(price_element.text.split('\xa0')[0].replace(' ', ''))
-            discount_price, common_price = common_price, discount_price
+        if price_input_value := soup.select_one('.js--price-current')['value']:
+            common_price = float(price_input_value)
+
+            if price_element := soup.select_one('.card-b__price-count_old'):
+                discount_price = float(price_element.text.split('\xa0')[0].replace(' ', ''))
+                discount_price, common_price = common_price, discount_price
 
         product['common_price'], product['discount_price'] = common_price, discount_price
 
