@@ -69,7 +69,7 @@ class Parser:
             product_common_price_element = product_outer_price_element.select_one('s')
 
             if product_common_price_element:
-                product['common_price'] = float(product_common_price_element.text.strip().split()[0])
+                product['common_price'] = float(product_common_price_element.text.strip().split()[0].replace(',', ''))
                 product['discount_price'] = float(product_outer_price_element.text.strip().split()[0])
             else:
                 product['common_price'] = float(product_outer_price_element.text.strip().split()[0])
