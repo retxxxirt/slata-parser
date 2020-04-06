@@ -105,26 +105,14 @@ class Parser:
         if (image_uri := soup.select_one('.fotorama img')['src']) != constants.NOPHOTO_URI:
             product['image_url'] = constants.DEFAULT_URL + image_uri
 
-        for characteristic_element in soup.select('.card-b__char .card-b__line'):
-            characteristic_label = characteristic_element.select_one('.card-b__label').text
-            characteristic_value = characteristic_element.select_one('.card-b__value').text
-
-            if characteristic_label.lower() in constants.PRODUCT_CHARACTERISTICS:
-                characteristic_label = constants.PRODUCT_CHARACTERISTICS[characteristic_label.lower()]
-                product[characteristic_label] = characteristic_value
-            else:
-                product['extra_characteristics'][characteristic_label] = characteristic_value
-
-        common_price, discount_price = None, None
+        product['common_price'], product['discount_price'] = None, None
 
         if price_input_value := soup.select_one('.js--price-current')['value']:
-            common_price = float(price_input_value)
+            product['common_price'] = float(price_input_value)
 
             if price_element := soup.select_one('.card-b__price-count_old'):
-                discount_price = float(price_element.text.split('\xa0')[0].replace(' ', ''))
-                discount_price, common_price = common_price, discount_price
-
-        product['common_price'], product['discount_price'] = common_price, discount_price
+                product['discount_price'] = float(price_element.text.split('\xa0')[0].replace(' ', ''))
+                product['discount_price'], product['common_price'] = product['common_price'], product['discount_price']
 
         availability_type = soup.select_one('.card-b__count').text.strip().lower()
         product['is_available'] = constants.PRODUCT_AVAILABILITY_STATES[availability_type]
